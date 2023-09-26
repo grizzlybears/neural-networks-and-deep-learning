@@ -1,0 +1,36 @@
+
+
+sudo apt install python3-numpy
+sudo apt-get install python3-scipy
+sudo pip3 install -U scikit-learn
+sudo pip3 install theano
+
+sudo apt-get install -y python3-jsonpickle
+sudo apt -y install python3-yaml
+
+=====================
+
+
+numpy.random.randn(y, 1) for y in sizes[1:]
+
+np.random.randn(y, x) for x, y in zip(sizes[:-1], sizes[1:])
+
+
+[2,3,1]
+
+sizes[:-1] => [2,3] , sizes[3,1]
+zip(sizes[:-1], sizes[1:]) => (2,3) , (3,1)
+
+==========================
+
+https://stackoverflow.com/questions/25568232/how-can-i-recursively-print-the-contents-of-a-variable-including-both-the-data
+
+import jsonpickle # pip install jsonpickle
+import json
+import yaml # pip install pyyaml
+
+serialized = jsonpickle.encode(obj)
+print json.dumps(json.loads(serialized), indent=4)
+print yaml.dump(yaml.load(serialized), indent=4)
+
+
