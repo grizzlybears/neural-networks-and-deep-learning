@@ -8,6 +8,9 @@ sudo pip3 install theano
 sudo apt-get install -y python3-jsonpickle
 sudo apt -y install python3-yaml
 
+
+https://www.jetbrains.com/products/compare/?product=pycharm&product=pycharm-ce
+
 =====================
 
 
