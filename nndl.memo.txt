@@ -36,4 +36,69 @@ serialized = jsonpickle.encode(obj)
 print json.dumps(json.loads(serialized), indent=4)
 print yaml.dump(yaml.load(serialized), indent=4)
 
+======================
+x(a,i)   第a个节点，来自于第i个输入的，待actived的值
+y(a,i)   第a个节点，来自于第i个输入的，active函数的结果
+
+==============================
+Cell state == long-term mem, which can not be directly modified by 'Weights' nor 'Biases'
+Hidden state == short-term mem
+
+(Input, pre long-term mem, pre short-term mem) => 
+
+【Step 1.】 remembered long-term memory, aka. 'forget gate'
+W1 * input  + W2 * pre short_mem + B1 -> A
+sigmoid(A) * pre long_mem -> 'remembered long_mem', because of 'sigmoid', this reduces long-tem a bit
+sigmoid(A): what percentage of long_mem was remembered
+
+【Step 2.】 new comer  long-term memory, aka. 'input gate'
+W3 * input + W4 * pre short_mem + B2 -> B
+TanH(B) ->  Potential long-term memory
+
+
+W5 * input  + W6 * pre short_mem + B3 -> C
+sigmoid(C) * Potential long-term memory -> 'new comer long_mem',
+sigmoid(A): what percentage of input and short_mem should be added to long_mem
+
+
+【Step 3.】 new long-term memory
+'remembered long-term memory' +  'new comer long_mem' -> 'new long-term memory'
+
+【Step 4.】 new short-term memory, aka. 'output gate'
+TanH('new long-term memory')  ->  Potential short-term memory
+
+W7 * input  + W8 * pre short_mem + B4 -> D
+sigmoid(D) * Potential short-term memory -> 'new short_mem',
+sigmoid(D):  percentage of potential memory to remember 
+
+
+
+=========================================================
+layer1: word as input
+layer2: nodes number = how many numbers (aka. 'embedding') we want to associate with each word
+
+'embedding' logically reads as 'meaning'.
+
+weight L1->L2: the number associated with each word
+layer3: the 'next' word of input in a given phrase, aka. 'predicted'
+
+=====================================
+token := word | punct;
+
+N 片LSTM(各自有各自的WnB)叠加，每一片称为一个Cell。每个Cell的input对应一个word embedding
+
+有多个这样的Cell组，每一个称为一个Layer
+
+Layer1 的输入是word embedding，Layer1的'output gate'，除了作为本身下一级的input，同时也作为layer2的input。
+
+word embedding + 多Layer多Cell LSTM -> encoder
+各Layer最后的'long_mem'以及'short_mem'的组合 -> context vector
+
+context vector 是 decoder的初始的 'pre long_mem'和'pre short_mem'
+
+Decoder也是多Layer多Celli结构，并且形状与encoder一致，不过WnB独立
+
+Decoder:= 目标语言的embedding + 多Layer多Cell LSTM + 反向embedding NN
+
+=============================================
 
