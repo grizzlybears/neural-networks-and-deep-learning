@@ -94,6 +94,8 @@ Layer1 的输入是word embedding，Layer1的'output gate'，除了作为本身�
 word embedding + 多Layer多Cell LSTM -> encoder
 各Layer最后的'long_mem'以及'short_mem'的组合 -> context vector
 
+不停地'enroll&输入’tokens至encoder，直到遇到EoS。此时整个句子已经‘浓缩’在context vector，EoS启动了Decoder。
+
 context vector 是 decoder的初始的 'pre long_mem'和'pre short_mem'
 
 Decoder也是多Layer多Celli结构，并且形状与encoder一致，不过WnB独立
@@ -101,4 +103,93 @@ Decoder也是多Layer多Celli结构，并且形状与encoder一致，不过WnB�
 Decoder:= 目标语言的embedding + 多Layer多Cell LSTM + 反向embedding NN
 
 =============================================
+一种加attention的方式
+
+  求第一个token encoder的输出与第一个 token  decoder的输出的相似度( 向量余弦)  //  第一步decoder的输出由EoS引发
+  求第二个token encoder的输出与第一个 token  decoder的输出的相似度
+  对这些相似度做SoftMax，其结果提示我们 what percentage of each encoded input word we should use when decoding
+
+  由于这个percentage直接把每一个input token与EoS的decoder输出联系了起来，
+  我们称其为'对于EoS的attention'
+
+  Sigma(i) of  第i个token 的 percentage *  第i个token的encoder输出, EoS的decoder输出 => fully connected layer => decode输出token
+
+=============================================
+一种postional encoding的方式
+
+设每个token有N个word embedding，则为每一个word embedding配一条周期/相位不同的正弦线，
+正弦线的X轴1,2,3,4代表token在输入句子的序号, Y轴就是position value
+
+origianl word embedding + position value -> postional encoding
+
+在transformer中，用postional encoding取代了LSTM，用Self-Attension取代了 LSTM配套的Attension.
+好处是: 
+  1. postional encoding 保存位置关系比LSTM更可靠。因为句子太长的时候，LSTM仍然会弱化乃至遗忘最初的token。
+  2. postional encoding, Self-Attension的计算都是可以并发的。
+
+=============================================
+Self-Attension
+
+The pizza came out of the oven and it tasted good.
+token两两一组，为每一组计算其相似性。大量训练word embedding的结果，'it'相比'oven'更容易出现在含有'pizza'的局子里, 故'it'相比'oven'与'pizza'更相似。
+
+我们在真正encoding一个token的时候，要考虑其和句子中其他token的相似性，来体现token之间的相关性。
+
+已知每个token的positional encoding是一个N维向量 (N: 设每个token有N个word embedding)
+
+另有一组 weight for Query 的 N:N 网络，一组 weight for Key的 N:N网络, 一组 weight for Value 的 N:N网络。
+
+positional encoding 过 weight for Query 网络 -> Query values 仍然是一个N维向量，简称Q
+positional encoding 过 weight for Key   网络 -> Key   values 仍然是一个N维向量，简称K
+positional encoding 过 weight for Value 网络 -> Value values 仍然是一个N维向量，简称V
+
+所有token计算其 Q, K, 和V，这个处理可以并发。
+
+token[a] 与 token[b]的相似度 = cosine_similarity( token[a]的query值 ,  token[b]的 key值);  // 此处a可以等于b
+
+对于每一个token，我们考察其与其他所有token的相似度，并作SoftMax
+加权应用到所有的V上再求和，得到 该token的  Self-Attension 值。
+
+
+positional encoded + Self-Attension -> Residual Connection Values
+
+====================================================================
+decoder only transformer 与 basic transformer的区别
+
+1. decoder only transformer 在 input部分和output部分用同一份 word embedding，同一份encoding NN。 // 同一种语言，不是'翻译'
+2. decoder only transformer 使用 masked self-attension，只考察每一个token与其之前token的相似度。
+3. masked self-attension，连同input seq 与output seq一同考察
+   例:   What is StateQuest? <EoS> Awesome {next}
+   在生成 {next}的时候，会考察|Awesome| 与 |What|, |is|,  |StateQuest?|,  |<EoS>|， |Awesome|的相似度
+
+=====================================
+in NN, 'Tensors' are ways to store the input data --  比如图像识别网络的话，那就是待识别的图像 --
+and 'Tensors' also store the Weights and Biases
+
+单个数值 --  scalar variable -- 0维 tensor
+一组数值 --  array           -- 1维 tensor
+图片之类的2维数值 -- matrix, 2D array -- 2维 tensor
+视频    -- N维数组 -- N维 tensor
+
+tensor 是为GPU/TPU优化的数组(包括利用 automatic differentiation 做backpropagation)
+
+================
+use anaconda from msys:
+  https://stackoverflow.com/questions/65572789/i-have-installed-msys2-and-anaconda3-then-how-can-i-use-conda-on-msys2
+
+=============================
+install dependencies of Chapter PyTorch:
+  conda install -c conda-forge matplotlib
+  conda install -c conda-forge seaborn
+  conda install -c pytorch -c nvidia pytorch torchvision torchaudio pytorch-cuda=11.8 
+
+
+
+
+已知  Products 表中有一行，
+select * from Products where Price > 10; 其没有出现 
+select * from Products where Price <= 10; 其也没有出现
+请问该行的Price是多少？
+
+ 
 
