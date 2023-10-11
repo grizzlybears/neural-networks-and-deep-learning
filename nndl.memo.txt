@@ -182,14 +182,11 @@ install dependencies of Chapter PyTorch:
   conda install -c conda-forge matplotlib
   conda install -c conda-forge seaborn
   conda install -c pytorch -c nvidia pytorch torchvision torchaudio pytorch-cuda=11.8 
+  conda install lightning -c conda-forge
 
+install tool to open .ipynb file
+  conda install jupyterlab  -c conda-forge
 
-
-
-已知  Products 表中有一行，
-select * from Products where Price > 10; 其没有出现 
-select * from Products where Price <= 10; 其也没有出现
-请问该行的Price是多少？
-
- 
+start .ipynb viewer
+  jupyter notebook
 
