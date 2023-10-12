@@ -67,6 +67,24 @@ class BasicLightningTrain(L.LightningModule):
 
         return output  # output is the predicted effectiveness for a drug dose.
 
+    def configure_optimizers(self): # this configures the optimizer we want to use for backpropagation.
+        return SGD(self.parameters(), lr=self.learning_rate) # NOTE: We set the learning rate (lr) to our new variable
+
+    def training_step(self, batch, batch_idx):  # take a step during gradient descent.
+
+        ## NOTE: When training_step() is called it calculates the loss with the code below...
+        input_i, label_i = batch  # collect input
+        output_i = self.forward(input_i)  # run input through the neural network
+        loss = (output_i - label_i) ** 2  ## loss = squared residual
+
+        ##...before calling (internally and behind the scenes)...
+        ## optimizer.zero_grad() # to clear gradients
+        ## loss.backward() # to do the backpropagation
+        ## optimizer.step() # to update the parameters
+        return loss
+
+
+                                                             # self.learning_rate
 ## create the neural network.
 model = BasicLightningTrain()
 
@@ -102,3 +120,80 @@ plt.xlabel('Dose')
 
 plt.savefig('un_optimized.pdf')
 
+print("\nLet's train:")
+
+## create the training data for the neural network.
+# inputs = torch.tensor([0., 0.5, 1.])
+# labels = torch.tensor([0., 1., 0.])
+## NOTE: Because we have so little data, and let's be honest, it's an unrealistically small
+## amount of data, the learning rate algorithm, lr_find(), that we use in the next section has trouble.
+## So, the point here is to show how to use lr_find() when you have a reasonable amount of data,
+## which we fake here by making 100 copies of the inputs and labels.
+inputs = torch.tensor([0., 0.5, 1.] * 100)
+labels = torch.tensor([0., 1., 0.] * 100)
+
+## If we want to use Lightning for training, then we have to pass the Trainer the data wrapped in
+## something called a DataLoader. DataLoaders provide a handful of nice features including...
+##   1) They can access the data in minibatches instead of all at once. In other words,
+##      The DataLoader doesn't need us to load all of the data into memory first. Instead
+##      it just loads what it needs in an efficient way. This is crucial for large datasets.
+##   2) They can reshuffle the data every epoch to reduce model overfitting
+##   3) We can easily just use a fraction of the data if we want do a quick train
+dataset = TensorDataset(inputs, labels)
+dataloader = DataLoader(dataset)
+
+
+## Now create a Trainer - we can use the trainer to...
+##  1) Find the optimal learning rate
+##  2) Train (optimize) the weights and biases in the model
+## By default, the trainer will run on your system's CPU
+trainer = L.Trainer(max_epochs = 40)
+
+
+## Now let's find the optimal learning rate
+# old fashion of 'tuner'
+#lr_find_results = trainer.tuner.lr_find(model,
+#                                        train_dataloaders=dataloader, # the training data
+#                                        min_lr=0.001, # minimum learning rate
+#                                        max_lr=1.0,   # maximum learning rate
+#                                        early_stop_threshold=None) # setting this to "None" tests all 100 candidate rates
+tuner = L.pytorch.tuner.tuning.Tuner( trainer )   # 'tuner' in lightning 2.0.9
+lr_find_results = tuner.lr_find(model,
+                                        train_dataloaders=dataloader, # the training data
+                                        min_lr=0.001, # minimum learning rate
+                                        max_lr=1.0,   # maximum learning rate
+                                        early_stop_threshold=None) # setting this to "None" tests all 100 candidate rates
+
+new_lr = lr_find_results.suggestion() ## suggestion() returns the best guess for the optimal learning rate
+
+## now print out the learning rate
+print(f"lr_find() suggests {new_lr:.5f} for the learning rate.")
+
+# now set the model's learning rate to the new value
+model.learning_rate = new_lr
+
+## Now that we have an improved learning rate, we can train the model (optimize final_bias)
+trainer.fit(model, train_dataloaders=dataloader)
+
+print(model.final_bias.data)
+
+
+## run the different doses through the neural network
+output_values = model(input_doses)
+
+## set the style for seaborn so that the graph looks cool.
+sns.set(style="whitegrid")
+
+## create the graph (you might not see it at this point, but you will after we save it as a PDF).
+sns.lineplot(x=input_doses,
+             y=output_values.detach(), ## NOTE: we call detach() because final_bias has a gradient
+             color='green',
+             linewidth=2)
+
+## now label the y- and x-axes.
+plt.ylabel('Effectiveness')
+plt.xlabel('Dose')
+
+plt.savefig('optimized.pdf')
+
+print("BAM!!!")
