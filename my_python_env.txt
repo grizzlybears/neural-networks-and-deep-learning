@@ -1,0 +1,26 @@
+1. Windows  standard python 3.12 (pip)
+    location:
+        C:\Users\43141\AppData\Local\Programs\Python\Python312>
+
+    to run: 
+        a. type 'python' in windows cmd
+        b. exec py code from VSCode
+
+2. windows anaconda 
+    location:
+        C:\tools\anaconda3
+
+    to run: 
+        a. Start menu -- Anaconda3 -- Anaconda Prompt
+        b. from mingw64 ". ~/conda"
+
+
+3. mingw64 standard python 3.10 (pip)
+    to run: 
+        type 'python' in mingw64 prompt 
+
+4. Fedora standard python 3.12 (pip)
+
+5. WSL2 (not yet)
+    vBox3.6 is not compatiable with WSL2, hold.
+ 

@@ -174,6 +174,14 @@ and 'Tensors' also store the Weights and Biases
 tensor 是为GPU/TPU优化的数组(包括利用 automatic differentiation 做backpropagation)
 
 ================
+
+some conda resources
+  https://conda.io/projects/conda/en/latest/user-guide/getting-started.html
+
+  【初心者】Anacondaを使ったPython環境構築-Windows
+    https://zenn.dev/makio/articles/69e38f5c90033e
+    
+======================
 use anaconda from msys:
   https://stackoverflow.com/questions/65572789/i-have-installed-msys2-and-anaconda3-then-how-can-i-use-conda-on-msys2
 
@@ -184,11 +192,18 @@ install dependencies of Chapter PyTorch:
   conda install -c pytorch -c nvidia pytorch torchvision torchaudio pytorch-cuda=11.8 
   conda install lightning -c conda-forge
 
-install tool to open .ipynb file
-  conda install jupyterlab  -c conda-forge
 
-start .ipynb viewer
-  jupyter notebook
+========================
+view .ipynb:
+  1. install tool to open .ipynb file
+    conda install jupyterlab  -c conda-forge
+
+    start .ipynb viewer
+      jupyter notebook
+  
+  2. direct open .ipynb from google drive 
+
+
 
 ======================
 more lightning rc:
@@ -197,3 +212,9 @@ more lightning rc:
 ==============
 another framework for ML (like lightning)
   https://docs.ray.io/en/latest/ray-overview/index.html
+  
+==============  
+  https://ai.google/discover/palm2/
+
+
+

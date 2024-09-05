@@ -1,0 +1,4 @@
+origin source
+  dataset and codes: https://drive.google.com/drive/folders/1OFNnrHRZPZ3unWdErjLHod8Ibv2FfG1d
+  lecture:           https://bizplusjp.udemy.com/course/deeplearning/learn/lecture/20258078
+
